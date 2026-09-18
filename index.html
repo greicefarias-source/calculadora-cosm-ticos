@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Custos | Cosméticos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #D4A574;
+            --dark: #1a1a1a;
+            --light-bg: #f9f7f4;
+            --border: #e0dcd7;
+            --text: #2a2a2a;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #999;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--dark);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+        }
+
+        .inline-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .exchange-rates {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #fafaf8;
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+
+        .rate-display {
+            text-align: center;
+        }
+
+        .rate-display .currency {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .rate-display .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .line-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .product-card {
+            background: #fafaf8;
+            padding: 1.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .product-size {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .formula-list {
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #666;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 3px;
+        }
+
+        .formula-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .formula-item:last-child {
+            border-bottom: none;
+        }
+
+        .cost-display {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 3px;
+            border: 2px solid var(--gold);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+        }
+
+        .cost-row.total {
+            font-weight: 600;
+            color: var(--gold);
+            border-top: 1px solid var(--gold);
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .markup-section {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 3px;
+            margin-top: 1rem;
+        }
+
+        .markup-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .markup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .markup-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .markup-input input {
+            width: 60px;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .markup-input label {
+            font-size: 0.8rem;
+            color: #666;
+            flex: 1;
+        }
+
+        .breakdown {
+            background: var(--white);
+            padding: 0.75rem;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-item.total {
+            font-weight: 600;
+            color: var(--gold);
+            border-top: 1px solid var(--gold);
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #c39560;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #d0ccc7;
+        }
+
+        /* MODAL STYLES */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 5px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: var(--dark);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+        }
+
+        .form-section {
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 3px;
+            margin: 1.5rem 0;
+        }
+
+        .form-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mp-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .mp-item-info {
+            flex: 1;
+        }
+
+        .mp-item-nome {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .mp-item-grama {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .mp-item-remove {
+            background: #ff6b6b;
+            color: var(--white);
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .mp-item-remove:hover {
+            background: #ff5252;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* LOGIN SCREEN */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--dark) 0%, #2a3a3a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-container {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subtitle {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 2rem;
+        }
+
+        .login-input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 5px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gold);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .login-button:hover {
+            background: #c39560;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 165, 116, 0.3);
+        }
+
+        .login-error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c49463;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+        }
+
+        .success-msg {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .inline-group {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-container">
+            <h1 class="login-title">Calculadora de Custos</h1>
+            <p class="login-subtitle">Acesso restrito</p>
+            
+            <div id="loginError" class="login-error"></div>
+            
+            <form id="loginForm" onsubmit="validarSenha(event)">
+                <div class="login-input-group">
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        class="login-input" 
+                        placeholder="Digite sua senha"
+                        autocomplete="off"
+                    >
+                </div>
+                <button type="submit" class="login-button">Acessar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        <div class="header">
+            <h1>Calculadora de Custos</h1>
+            <p>62 produtos em 16 linhas cosméticas premium</p>
+        </div>
+
+        <div id="successMsg"></div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="materiais">Matérias-Primas</button>
+            <button class="tab-btn" data-tab="produtos">Produtos & Custos</button>
+            <button class="tab-btn" data-tab="embalagem">Embalagem</button>
+        </div>
+
+        <!-- TAB MATÉRIAS-PRIMAS -->
+        <div id="materiais" class="tab-content active">
+            <div class="section">
+                <div class="section-title">Cotação de Câmbio (Padrão)</div>
+                <div class="exchange-rates">
+                    <div class="rate-display">
+                        <div class="currency">USD</div>
+                        <div class="value">R$ <span id="usdRate">5.16</span></div>
+                    </div>
+                    <div class="rate-display">
+                        <div class="currency">EUR</div>
+                        <div class="value">R$ <span id="eurRate">5.92</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Preços de Matérias-Primas (R$ por 1000g)</div>
+                <div class="grid" id="materiaisList"></div>
+            </div>
+        </div>
+
+        <!-- TAB PRODUTOS -->
+        <div id="produtos" class="tab-content">
+            <div class="button-group" style="margin-bottom: 2rem;">
+                <button class="btn btn-primary" onclick="abrirModalNovoProduto()">+ Novo Produto</button>
+                <button class="btn btn-primary" onclick="exportarPDF()">📄 Exportar PDF</button>
+                <button class="btn btn-secondary" onclick="exportarDados()">Exportar JSON</button>
+            </div>
+            <div id="linhasProdutos"></div>
+        </div>
+
+        <!-- TAB EMBALAGEM -->
+        <div id="embalagem" class="tab-content">
+            <div id="linhasEmbalagem"></div>
+        </div>
+
+        <!-- MODAL NOVO PRODUTO -->
+        <div id="modalNovoProduto" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Criar Novo Produto</h2>
+                    <button class="close-btn" onclick="fecharModalNovoProduto()">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Linha -->
+                    <div class="form-group">
+                        <label>Selecione a Linha:</label>
+                        <select id="selectLinha">
+                            <option value="">-- Escolha uma linha --</option>
+                        </select>
+                    </div>
+
+                    <!-- Nome do Produto -->
+                    <div class="form-group">
+                        <label>Nome do Produto:</label>
+                        <input type="text" id="inputNomeProduto" placeholder="Ex: Shampoo Premium">
+                    </div>
+
+                    <!-- Tamanho -->
+                    <div class="form-group">
+                        <label>Tamanho (gramas):</label>
+                        <input type="number" id="inputTamanhoProduto" placeholder="Ex: 300" min="1">
+                    </div>
+
+                    <!-- Adicionar MPs -->
+                    <div class="form-section">
+                        <div class="form-title">Adicionar Matérias-Primas</div>
+                        
+                        <div class="form-group">
+                            <label>Matéria-Prima:</label>
+                            <select id="selectMP">
+                                <option value="">-- Escolha uma MP --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gramatura (g):</label>
+                            <input type="number" id="inputGramatura" placeholder="Ex: 100" min="0" step="0.1">
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="adicionarMPTemporaria()">+ Adicionar MP</button>
+                    </div>
+
+                    <!-- Lista de MPs Adicionadas -->
+                    <div class="form-section" id="secaoMPsAdicionadas" style="display: none;">
+                        <div class="form-title">Matérias-Primas Adicionadas</div>
+                        <div id="listaMPsTemporarias"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="fecharModalNovoProduto()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="criarNovoProduto()">Criar Produto</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        // DADOS
+        const materiaisPrimas = {
+            'AGUA DEIONIZADA': 2.00,
+            'ACIDO CITRICO': 23.56,
+            'ACIDO GLIOXILICO 50%': 56.69,
+            'ACIDO GLIOXILICO AK 50H': 81.02,
+            'ACIDO LATICO': 19.59,
+            'AGREEN COTTON': 40.87,
+            'ALCOOL CETOEST. ETOXILADO': 30.86,
+            'ALCOOL CETOESTEARILICO 30/70': 22.64,
+            'ALCOOL ETILICO 96': 6.89,
+            'ALCOOL NEUTRO/CEREAIS': 26.17,
+            'AMIDA 80': 23.36,
+            'ARGININA HIDROLIZADA': 57.07,
+            'BASE PEROLADA': 19.94,
+            'BHT': 95.59,
+            'BIO ACETUM BALSAMICO': 82.79,
+            'BIO ELIXIR': 137.53,
+            'BIOCONTROLE C/MICROSTAT': 6.81,
+            'BIOTINA': 211.30,
+            'CLORETO DE SODIO': 3.68,
+            'COCO AMIDO PROPIL BETAINA': 10.26,
+            'COLAGENO/PROTEINAN SP': 63.01,
+            'COMPLEXO BIO RESTORE': 581.33,
+            'CORANTE AMARELO JAUNE AU': 843.38,
+            'CORANTE AZUL BRILHANTE': 2672.25,
+            'D&C VIOLET K7023': 1012.79,
+            'DMDM HYDANTOIN': 58.41,
+            'D-PANTENOL': 82.95,
+            'EDTA DISSODICO': 25.37,
+            'EMULSIFIER AFF': 190.18,
+            'ESCALOL OMC': 347.80,
+            'ESSENCIA AMEIXA TROPICAL': 166.51,
+            'ESSENCIA ABSOLUT REPAIR': 154.80,
+            'ESSENCIA CLEANER SH': 154.80,
+            'ESSENCIA COLAGENO CREME': 154.80,
+            'ESSENCIA DEAR MAN COS': 162.54,
+            'ESSENCIA DOVE I': 167.18,
+            'ESSENCIA DOVE II': 154.80,
+            'ESSENCIA ELSEVE NUTRICAO': 154.80,
+            'ESSENCIA FEEL GOOD': 162.54,
+            'ESSENCIA LEVIE': 154.80,
+            'ESSENCIA MYTHIC OIL': 154.80,
+            'ESSENCIA MANDIOCA DA TERRA': 162.54,
+            'ESSENCIA MAXINN SALON': 162.54,
+            'ESSENCIA ORQUIDEA/YLANG': 154.80,
+            'ESSENCIA PARFUM ARGAN OIL': 162.54,
+            'ESSENCIA PURIFICACAO': 201.24,
+            'ESSENCIA QUERA HAIR': 154.80,
+            'ESSENCIA RESTORE TREAT': 154.80,
+            'ESSENCIA TIPO ORO ROBERTO': 154.80,
+            'ESSENCIA TRENDY': 154.80,
+            'EXTRATO DE ALECRIM': 51.85,
+            'EXTRATO DE ALGAS MARINHAS': 42.12,
+            'EXTRATO DE ALOE VERA': 20.04,
+            'EXTRATO DE BROTO DE BAMBU': 66.02,
+            'EXTRATO DE COCO HG': 66.11,
+            'FIBER CARE X': 246.75,
+            'GLICERINA BI-DESTILADA': 15.86,
+            'GOMA GUAR QUATERNIZADA': 100.26,
+            'ISOPAR L': 42.88,
+            'KEM DIOL 10': 80.69,
+            'LANETTE 16': 32.36,
+            'LANETTE 18': 59.81,
+            'LANOLINA ETOXILADA': 49.32,
+            'LAURIL ETER SULFATO': 7.74,
+            'LUNA MATRIX SYSTEM': 1646.04,
+            'MANTEIGA DE ABACATE': 93.40,
+            'MANTEIGA DE CUPUAÇU': 98.90,
+            'MANTEIGA DE KARITE': 55.57,
+            'MENTOL': 221.34,
+            'MICA/TIMIRON MP-115': 273.92,
+            'NATROSOL 250HHR': 197.87,
+            'OLEO DE ARGAN': 197.87,
+            'OLEO DE ABACATE': 107.00,
+            'OLEO DE CAMELINA': 77.66,
+            'OLEO DE MACADAMIA': 67.16,
+            'OLEO DE MAMONA': 33.50,
+            'OLEO DE MUTAMBA': 56.70,
+            'OLEO DE OJON': 149.90,
+            'PEROXIDO DE HIDROGENIO': 8.20,
+            'PLANTAREM 1200': 47.84,
+            'PLANTOCOL': 202.15,
+            'POLIMERO W25': 18.80,
+            'POLIQUARTENIUM 7': 18.69,
+            'POLIQUARTENIUM 37': 590.02,
+            'POLYDISPERSE GLDA': 9.99,
+            'POLYDISPERSE H-1': 9.99,
+            'POLYGREEN COCONUT OIL': 49.63,
+            'POLYMINE SDA': 63.65,
+            'POLYMOL IPP': 48.22,
+            'PROCOLOR TG': 169.31,
+            'PROPILENOGLICOL': 21.17,
+            'PVP K90': 0.00,
+            'QUATERNARIO DE AMONIO 50%': 18.06,
+            'QUERATINA HIDROLISADA': 70.65,
+            'QUERATRIX SB': 119.59,
+            'REPARAGE': 344.96,
+            'SALCARE SC 60': 617.94,
+            'SILICONE DC 1501': 93.42,
+            'SILICONE DC 1664': 223.76,
+            'SILICONE DC 1785': 40.97,
+            'SILICONE DC 193': 58.51,
+            'SILICONE DC 2010': 45.55,
+            'SILICONE DC 245': 45.02,
+            'SILICONE DC 949': 45.78,
+            'SILICONE DC 7080': 372.94,
+            'SILICONE DC 8177': 0.00,
+            'SILICONE DC 9027': 132.54,
+            'SILICONE EMULSAO': 0.00,
+            'SOFTCAT SX 1300X': 916.36,
+            'SOLUBILIZER': 147.93,
+            'SUNQUART TMS': 87.61,
+            'TAMARILIZ': 172.76,
+            'TREHALOSE 100': 103.39,
+            'TRIBOCARE RP': 209.41,
+            'TRIBOXYL AAC': 216.00,
+            'TRIETANOLAMINA': 58.50,
+            'VASELINA LIQUIDA': 24.00
+        };
+
+        const linhas = {
+            'REINFORCE': [
+                { nome: 'MASCARA REESTRUTURADORA', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 770.20, 'NATROSOL 250HHR': 5.00, 'BHT': 0.50, 'ALCOOL CETOESTEARILICO 30/70': 70.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'MANTEIGA DE ABACATE': 15.00, 'QUATERNARIO DE AMONIO 50%': 30.00, 'GOMA GUAR QUATERNIZADA': 3.50, 'PROPILENOGLICOL': 15.00, 'REPARAGE': 15.00, 'EXTRATO DE BROTO DE BAMBU': 5.00, 'QUERATRIX SB': 20.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'COLAGENO/PROTEINAN SP': 30.00, 'KEM DIOL 10': 3.00, 'POLIMERO W25': 5.00, 'ESSENCIA QUERA HAIR': 5.00, 'ACIDO LATICO': 1.80 } },
+                { nome: 'FIXADOR ENZIMATICO', tamanho: 900, formula: { 'AGUA DEIONIZADA': 760.23, 'POLYDISPERSE GLDA': 2.70, 'SOFTCAT SX 1300X': 2.70, 'ALCOOL CETOEST. ETOXILADO': 4.50, 'ALCOOL CETOESTEARILICO 30/70': 31.50, 'MANTEIGA DE ABACATE': 13.50, 'SUNQUART TMS': 22.50, 'TAMARILIZ': 9.00, 'SILICONE DC 1664': 9.00, 'SILICONE DC 1501': 9.00, 'BIO ACETUM BALSAMICO': 1.80, 'BIOCONTROLE C/MICROSTAT': 0.72, 'POLYDISPERSE H-1': 2.25, 'PEROXIDO DE HIDROGENIO': 16.20, 'TRIETANOLAMINA': 0.90 } },
+                { nome: 'LEAVE-IN SELAGEM ABSOLUTA', tamanho: 250, formula: { 'AGUA DEIONIZADA': 209.69, 'GLICERINA BI-DESTILADA': 5.00, 'DMDM HYDANTOIN': 1.00, 'POLIQUARTENIUM 7': 1.25, 'SILICONE DC 1785': 2.50, 'SILICONE DC 949': 5.00, 'BIO ACETUM BALSAMICO': 3.75, 'OLEO DE MACADAMIA': 1.25, 'TAMARILIZ': 5.00, 'GOMA GUAR QUATERNIZADA': 1.25, 'PROPILENOGLICOL': 5.00, 'ESSENCIA QUERA HAIR': 1.25, 'POLIQUARTENIUM 37': 1.81 } }
+            ],
+            'INFINITY': [
+                { nome: 'BRILHANT COLOR', tamanho: 900, formula: { 'AGUA DEIONIZADA': 843.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 30.00, 'OLEO DE MACADAMIA': 10.00, 'SUNQUART TMS': 25.00, 'KEM DIOL 10': 5.00, 'PROCOLOR TG': 10.00, 'SILICONE DC 2010': 10.00, 'BIO ACETUM BALSAMICO': 8.00, 'QUERATINA HIDROLISADA': 5.00, 'POLYDISPERSE H-1': 15.00, 'PEROXIDO DE HIDROGENIO': 24.00, 'GOMA GUAR QUATERNIZADA': 2.00, 'PROPILENOGLICOL': 3.00, 'TRIETANOLAMINA': 4.00 } }
+            ],
+            'PLATINUM': [
+                { nome: 'PLATINUM SHAMPOO', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 486.00, 'SALCARE SC 60': 1.00, 'EDTA DISSODICO': 1.00, 'LAURIL ETER SULFATO': 280.00, 'AMIDA 80': 40.00, 'COCO AMIDO PROPIL BETAINA': 80.00, 'BASE PEROLADA': 20.00, 'POLIQUARTENIUM 7': 20.00, 'PLANTAREM 1200': 10.00, 'D-PANTENOL': 5.00, 'PROCOLOR TG': 5.00, 'GOMA GUAR QUATERNIZADA': 1.00, 'PROPILENOGLICOL': 1.00, 'SILICONE DC 193': 2.00, 'SILICONE DC 2010': 10.00, 'D&C VIOLET K7023': 1.00, 'ESSENCIA MAXINN SALON': 5.00, 'BIOCONTROLE C/MICROSTAT': 1.00 } },
+                { nome: 'PLATINUM MASK', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 727.00, 'SALCARE SC 60': 2.00, 'EDTA DISSODICO': 1.00, 'ALCOOL CETOESTEARILICO 30/70': 70.00, 'SUNQUART TMS': 20.00, 'QUATERNARIO DE AMONIO 50%': 30.00, 'PROCOLOR TG': 15.00, 'MANTEIGA DE ABACATE': 5.00, 'VASELINA LIQUIDA': 20.00, 'LANOLINA ETOXILADA': 10.00, 'SILICONE DC 1664': 10.00, 'D-PANTENOL': 5.00, 'SILICONE DC 245': 20.00, 'SILICONE DC 949': 10.00, 'SILICONE DC 2010': 20.00, 'GLICERINA BI-DESTILADA': 20.00, 'QUERATINA HIDROLISADA': 5.00, 'BIOCONTROLE C/MICROSTAT': 1.00 } },
+                { nome: 'PLATINUM DROP', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 866.00, 'EDTA DISSODICO': 1.00, 'MANTEIGA DE ABACATE': 5.00, 'MANTEIGA DE KARITE': 5.00, 'D-PANTENOL': 2.00, 'GLICERINA BI-DESTILADA': 10.00, 'LANOLINA ETOXILADA': 5.00, 'PROCOLOR TG': 5.00, 'QUERATINA HIDROLISADA': 5.00, 'SILICONE DC 1785': 20.00, 'SILICONE DC 2010': 10.00, 'SILICONE DC 245': 20.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'GOMA GUAR QUATERNIZADA': 8.00, 'PROPILENOGLICOL': 20.00, 'POLIQUARTENIUM 37': 10.00, 'D&C VIOLET K7023': 2.00, 'ESSENCIA MAXINN SALON': 5.00 } },
+                { nome: 'MASCARA PLATINUM', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 665.00, 'EDTA DISSODICO': 1.00, 'BHT': 1.00, 'LANETTE 16': 45.00, 'LANETTE 18': 20.00, 'VASELINA LIQUIDA': 30.00, 'QUATERNARIO DE AMONIO 50%': 30.00, 'GLICERINA BI-DESTILADA': 20.00, 'D&C VIOLET K7023': 2.00, 'PROCOLOR TG': 10.00, 'SILICONE DC 949': 30.00, 'SILICONE DC 1501': 40.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'KEM DIOL 10': 1.00, 'ESSENCIA MAXINN SALON': 5.00, 'ACIDO LATICO': 1.00 } }
+            ],
+            'OXIDANTES': [
+                { nome: 'OXIDANTE 10V', tamanho: 900, formula: { 'AGUA DEIONIZADA': 810.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 40.00, 'VASELINA LIQUIDA': 15.00, 'SUNQUART TMS': 20.00, 'POLYDISPERSE H-1': 15.00, 'BIO ELIXIR': 5.00, 'PEROXIDO DE HIDROGENIO': 80.00, 'KEM DIOL 10': 5.00, 'TRIETANOLAMINA': 2.00 } },
+                { nome: 'OXIDANTE 20V', tamanho: 900, formula: { 'AGUA DEIONIZADA': 762.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 43.00, 'VASELINA LIQUIDA': 15.00, 'SUNQUART TMS': 20.00, 'POLYDISPERSE H-1': 15.00, 'BIO ELIXIR': 5.00, 'PEROXIDO DE HIDROGENIO': 120.00, 'KEM DIOL 10': 5.00, 'TRIETANOLAMINA': 8.00 } },
+                { nome: 'OXIDANTE 30V', tamanho: 900, formula: { 'AGUA DEIONIZADA': 699.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 45.00, 'VASELINA LIQUIDA': 15.00, 'SUNQUART TMS': 20.00, 'POLYDISPERSE H-1': 15.00, 'BIO ELIXIR': 5.00, 'PEROXIDO DE HIDROGENIO': 180.00, 'KEM DIOL 10': 5.00, 'TRIETANOLAMINA': 8.00 } },
+                { nome: 'OXIDANTE 40V', tamanho: 900, formula: { 'AGUA DEIONIZADA': 627.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 48.00, 'VASELINA LIQUIDA': 15.00, 'SUNQUART TMS': 20.00, 'POLYDISPERSE H-1': 15.00, 'BIO ELIXIR': 5.00, 'PEROXIDO DE HIDROGENIO': 250.00, 'KEM DIOL 10': 5.00, 'TRIETANOLAMINA': 8.00 } }
+            ],
+            'UP CURLY': [
+                { nome: 'MASCARA ATIVADORA DE CACHOS', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 693.00, 'EDTA DISSODICO': 1.00, 'ALCOOL CETOESTEARILICO 30/70': 40.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'SUNQUART TMS': 10.00, 'QUATERNARIO DE AMONIO 50%': 20.00, 'OLEO DE OJON': 10.00, 'PLANTOCOL': 30.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'ACIDO GLIOXILICO 50%': 150.00, 'ESSENCIA ABSOLUT REPAIR': 10.00, 'GOMA GUAR QUATERNIZADA': 2.00, 'PROPILENOGLICOL': 5.00, 'TRIETANOLAMINA': 23.00 } },
+                { nome: 'BALSAMO EQUALIZADOR DE pH', tamanho: 900, formula: { 'AGUA DEIONIZADA': 845.00, 'POLYDISPERSE GLDA': 3.00, 'SOFTCAT SX 1300X': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 35.00, 'MANTEIGA DE ABACATE': 15.00, 'SUNQUART TMS': 25.00, 'TAMARILIZ': 10.00, 'SILICONE DC 1664': 10.00, 'SILICONE DC 1501': 10.00, 'BIO ACETUM BALSAMICO': 2.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'POLYDISPERSE H-1': 3.00, 'PEROXIDO DE HIDROGENIO': 18.00, 'TRIETANOLAMINA': 1.00 } },
+                { nome: 'FLUIDO DEFINIÇÃO DE CACHOS', tamanho: 250, formula: { 'AGUA DEIONIZADA': 755.00, 'TREHALOSE 100': 20.00, 'EDTA DISSODICO': 1.00, 'ALCOOL CETOESTEARILICO 30/70': 35.00, 'SUNQUART TMS': 15.00, 'MANTEIGA DE CUPUAÇU': 30.00, 'POLYGREEN COCONUT OIL': 10.00, 'FIBER CARE X': 20.00, 'PLANTOCOL': 30.00, 'OLEO DE ABACATE': 20.00, 'OLEO DE MAMONA': 20.00, 'DMDM HYDANTOIN': 4.00, 'ESSENCIA MYTHIC OIL': 10.00, 'ACIDO LATICO': 1.00 } }
+            ],
+            'UMECTACAO': [
+                { nome: 'MASCARA HIDRA THERAPY', tamanho: 1000, formula: { 'AGUA DEIONIZADA': 780.00, 'ACIDO LATICO': 2.00, 'EDTA DISSODICO': 1.00, 'POLYMINE SDA': 12.00, 'SOFTCAT SX 1300X': 2.00, 'LANETTE 16': 60.00, 'LANETTE 18': 30.00, 'MANTEIGA DE ABACATE': 15.00, 'VASELINA LIQUIDA': 10.00, 'SUNQUART TMS': 30.00, 'BIO ELIXIR': 20.00, 'BIOCONTROLE C/MICROSTAT': 2.00, 'ESSENCIA ELSEVE NUTRICAO': 5.00 } },
+                { nome: 'SERUM 12 OLEOS', tamanho: 250, formula: { 'ISOPAR L': 85.00, 'SILICONE DC 9027': 60.00, 'SILICONE DC 2010': 800.00, 'BIO ELIXIR': 50.00, 'ESSENCIA ELSEVE NUTRICAO': 5.00, 'CORANTE AMARELO JAUNE AU': 0.00 } }
+            ],
+            'VP': [
+                { nome: 'VP MASK', tamanho: 500, formula: { 'AGUA DEIONIZADA': 587.00, 'EDTA DISSODICO': 1.00, 'BHT': 2.00, 'SOFTCAT SX 1300X': 1.00, 'SALCARE SC 60': 2.00, 'ALCOOL CETOESTEARILICO 30/70': 40.00, 'LANETTE 18': 20.00, 'VASELINA LIQUIDA': 30.00, 'SUNQUART TMS': 30.00, 'D-PANTENOL': 5.00, 'SILICONE DC 949': 30.00, 'SILICONE DC 1501': 15.00, 'BIOCONTROLE C/MICROSTAT': 1.00, 'KEM DIOL 10': 5.00, 'ESSENCIA TIPO ORO ROBERTO': 5.00 } },
+                { nome: 'KERASUPLY', tamanho: 200, formula: { 'AGUA DEIONIZADA': 775.00, 'EDTA DISSODICO': 1.00, 'SOFTCAT SX 1300X': 3.00, 'NATROSOL 250HHR': 8.00, 'GLICERINA BI-DESTILADA': 40.00, 'SILICONE DC 1664': 40.00, 'SILICONE DC 193': 5.00, 'SILICONE DC 949': 35.00, 'QUERATINA HIDROLISADA': 40.00, 'ESSENCIA TIPO ORO ROBERTO': 5.00, 'DMDM HYDANTOIN': 4.00, 'GOMA GUAR QUATERNIZADA': 4.00, 'PROPILENOGLICOL': 40.00, 'TRIETANOLAMINA': 1.00 } },
+                { nome: 'NEUTRALIZER', tamanho: 900, formula: { 'AGUA DEIONIZADA': 843.00, 'POLYDISPERSE GLDA': 3.00, 'ALCOOL CETOEST. ETOXILADO': 5.00, 'ALCOOL CETOESTEARILICO 30/70': 30.00, 'OLEO DE MACADAMIA': 10.00, 'SUNQUART TMS': 25.00, 'KEM DIOL 10': 5.00, 'PROCOLOR TG': 10.00, 'SILICONE DC 2010': 10.00, 'BIO ACETUM BALSAMICO': 8.00, 'QUERATINA HIDROLISADA': 5.00, 'POLYDISPERSE H-1': 15.00, 'PEROXIDO DE HIDROGENIO': 24.00, 'GOMA GUAR QUATERNIZADA': 2.00, 'PROPILENOGLICOL': 3.00, 'TRIETANOLAMINA': 4.00 } }
+            ],
+            'FINISH STYLE': [
+                { nome: 'BABY LISS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 876.00, 'PVP K90': 10.00, 'DMDM HYDANTOIN': 4.00, 'GLICERINA BI-DESTILADA': 30.00, 'SILICONE EMULSAO': 30.00, 'SILICONE DC 7080': 40.00, 'SOLUBILIZER': 5.00, 'ESSENCIA DOVE I': 5.00 } },
+                { nome: 'BIO KERATIN', tamanho: 300, formula: { 'AGUA DEIONIZADA': 789.00, 'SILICONE DC 1664': 35.00, 'GLICERINA BI-DESTILADA': 30.00, 'SILICONE DC 949': 45.00, 'SILICONE DC 1785': 30.00, 'QUERATINA HIDROLISADA': 40.00, 'COMPLEXO BIO RESTORE': 2.00, 'BIOTINA': 20.00, 'ESSENCIA QUERA HAIR': 5.00, 'DMDM HYDANTOIN': 4.00 } },
+                { nome: 'EQUILIBRIUM', tamanho: 200, formula: { 'AGUA DEIONIZADA': 861.00, 'SILICONE DC 1664': 20.00, 'PROPILENOGLICOL': 20.00, 'GLICERINA BI-DESTILADA': 30.00, 'SILICONE DC 949': 30.00, 'SILICONE DC 1785': 30.00, 'DMDM HYDANTOIN': 3.00, 'ESSENCIA RESTORE TREAT': 5.00, 'ACIDO LATICO': 1.00 } },
+                { nome: 'PROTECAO TERMICA MATIZADORA', tamanho: 300, formula: { 'AGUA DEIONIZADA': 824.00, 'SOLUBILIZER': 13.00, 'ESSENCIA DOVE I': 8.00, 'SILICONE DC 949': 45.00, 'PROPILENOGLICOL': 20.00, 'GLICERINA BI-DESTILADA': 30.00, 'QUERATINA HIDROLISADA': 15.00, 'SILICONE DC 1785': 40.00, 'DMDM HYDANTOIN': 4.00, 'ACIDO CITRICO': 1.00 } },
+                { nome: 'SHINE UP', tamanho: 200, formula: { 'AGUA DEIONIZADA': 790.00, 'EDTA DISSODICO': 1.00, 'QUERATINA HIDROLISADA': 5.00, 'SILICONE DC 245': 15.00, 'SILICONE DC 2010': 10.00, 'GLICERINA BI-DESTILADA': 20.00, 'D-PANTENOL': 5.00, 'LANOLINA ETOXILADA': 5.00, 'BASE PEROLADA': 20.00, 'EMULSIFIER AFF': 35.00, 'PROPILENOGLICOL': 20.00, 'GOMA GUAR QUATERNIZADA': 10.00, 'MICA/TIMIRON MP-115': 20.00, 'ESSENCIA PURIFICACAO': 10.00, 'DMDM HYDANTOIN': 4.00, 'POLIQUARTENIUM 37': 10.00 } },
+                { nome: 'STYLE OFF', tamanho: 200, formula: { 'AGUA DEIONIZADA': 827.00, 'EDTA DISSODICO': 1.00, 'SOFTCAT SX 1300X': 1.00, 'LANETTE 16': 40.00, 'LANETTE 18': 15.00, 'MANTEIGA DE KARITE': 15.00, 'SUNQUART TMS': 20.00, 'POLYGREEN COCONUT OIL': 5.00, 'POLIMERO W25': 25.00, 'POLYMOL IPP': 7.00, 'QUERATINA HIDROLISADA': 5.00, 'DMDM HYDANTOIN': 3.00, 'ESSENCIA DEAR MAN COS': 5.00, 'GOMA GUAR QUATERNIZADA': 3.00, 'PROPILENOGLICOL': 7.00, 'ACIDO LATICO': 1.00 } }
+            ],
+            'OLEOS': [
+                { nome: 'OLEO DE ARGAN E MACADAMIA', tamanho: 45, formula: { 'ISOPAR L': 14.00, 'SILICONE DC 1501': 23.00, 'SILICONE DC 9027': 5.00, 'OLEO DE MACADAMIA': 2.00 } },
+                { nome: 'OLEO DE CAMELINA', tamanho: 45, formula: { 'SILICONE DC 2010': 42.00, 'OLEO DE CAMELINA': 2.00, 'ESSENCIA PARFUM ARGAN OIL': 0.00 } },
+                { nome: 'SERUM 12 OLEOS', tamanho: 45, formula: { 'ISOPAR L': 4.00, 'SILICONE DC 9027': 3.00, 'SILICONE DC 2010': 36.00, 'BIO ELIXIR': 2.00, 'ESSENCIA ELSEVE NUTRICAO': 0.00, 'CORANTE AMARELO JAUNE AU': 0.00 } }
+            ],
+            'HOME': [
+                { nome: 'SHAMPOO CAB.ALISADOS E RESSECADOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 129.00, 'SALCARE SC 60': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 18.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 6.00, 'POLIQUARTENIUM 7': 2.00, 'PLANTAREM 1200': 2.00, 'D-PANTENOL': 2.00, 'POLIMERO W25': 2.00, 'PROPILENOGLICOL': 1.00, 'ESSENCIA TIPO ORO ROBERTO': 3.00, 'ACIDO CITRICO': 0.00, 'CLORETO DE SODIO': 0.00 } },
+                { nome: 'MASCARA CAB.ALISADOS E RESSECADOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 174.00, 'EDTA DISSODICO': 0.00, 'BHT': 1.00, 'SOFTCAT SX 1300X': 0.00, 'SALCARE SC 60': 1.00, 'ALCOOL CETOESTEARILICO 30/70': 12.00, 'LANETTE 18': 6.00, 'OLEO DE MACADAMIA': 9.00, 'SUNQUART TMS': 9.00, 'D-PANTENOL': 2.00, 'SILICONE DC 949': 9.00, 'SILICONE DC 1501': 5.00, 'KEM DIOL 10': 2.00, 'ESSENCIA TIPO ORO ROBERTO': 3.00 } },
+                { nome: 'SHAMPOO CABELOS CACHEADOS E VOLUMOSOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 168.00, 'EDTA DISSODICO': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 18.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 3.00, 'POLIQUARTENIUM 7': 2.00, 'POLIMERO W25': 8.00, 'SILICONE DC 1785': 3.00, 'ESSENCIA MYTHIC OIL': 3.00, 'CLORETO DE SODIO': 2.00 } },
+                { nome: 'MASCARA CABELOS CACHEADOS E VOLUMOSOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 188.00, 'POLYMINE SDA': 6.00, 'ACIDO LATICO': 2.00, 'EDTA DISSODICO': 0.00, 'GLICERINA BI-DESTILADA': 6.00, 'ALCOOL CETOESTEARILICO 30/70': 14.00, 'SUNQUART TMS': 6.00, 'MANTEIGA DE ABACATE': 6.00, 'MANTEIGA DE CUPUAÇU': 6.00, 'VASELINA LIQUIDA': 6.00, 'TREHALOSE 100': 9.00, 'OLEO DE MAMONA': 9.00, 'OLEO DE ABACATE': 6.00, 'D-PANTENOL': 2.00, 'KEM DIOL 10': 2.00, 'ESSENCIA MYTHIC OIL': 3.00 } },
+                { nome: 'SHAMPOO CAB.COLORIDOS E NATURAIS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 168.00, 'EDTA DISSODICO': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 18.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 3.00, 'POLIQUARTENIUM 7': 2.00, 'POLIMERO W25': 8.00, 'SILICONE DC 1785': 3.00, 'ESSENCIA PURIFICACAO': 3.00, 'CLORETO DE SODIO': 2.00 } },
+                { nome: 'MASCARA CAB.COLORIDOS E NATURAIS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 230.00, 'EDTA DISSODICO': 0.00, 'BHT': 0.00, 'LANETTE 16': 12.00, 'LANETTE 18': 6.00, 'OLEO DE MACADAMIA': 9.00, 'SUNQUART TMS': 9.00, 'GLICERINA BI-DESTILADA': 6.00, 'D&C VIOLET K7023': 0.00, 'PROCOLOR TG': 3.00, 'SILICONE DC 949': 9.00, 'SILICONE DC 1501': 5.00, 'KEM DIOL 10': 2.00, 'ESSENCIA PURIFICACAO': 4.00 } },
+                { nome: 'SHAMPOO CAB.FRAGEIS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 169.00, 'EDTA DISSODICO': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 18.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 3.00, 'POLIQUARTENIUM 7': 2.00, 'POLIMERO W25': 8.00, 'SILICONE DC 1785': 3.00, 'ESSENCIA QUERA HAIR': 3.00, 'CLORETO DE SODIO': 1.00 } },
+                { nome: 'MASCARA CAB.FRAGEIS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 233.00, 'EDTA DISSODICO': 0.00, 'BHT': 0.00, 'GLICERINA BI-DESTILADA': 6.00, 'LANETTE 16': 11.00, 'LANETTE 18': 6.00, 'VASELINA LIQUIDA': 9.00, 'SUNQUART TMS': 9.00, 'SILICONE DC 949': 9.00, 'SILICONE DC 1501': 5.00, 'REPARAGE': 2.00, 'EXTRATO DE BROTO DE BAMBU': 2.00, 'QUERATRIX SB': 3.00, 'KEM DIOL 10': 2.00, 'ESSENCIA QUERA HAIR': 4.00 } },
+                { nome: 'SHAMPOO CAB.LOIROS E MECHADOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 130.00, 'EDTA DISSODICO': 0.00, 'SALCARE SC 60': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 18.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 6.00, 'POLIQUARTENIUM 7': 2.00, 'PLANTAREM 1200': 2.00, 'D-PANTENOL': 2.00, 'PROCOLOR TG': 2.00, 'SILICONE DC 1785': 3.00, 'ESSENCIA MAXINN SALON': 2.00, 'ACIDO CITRICO': 1.00, 'CLORETO DE SODIO': 2.00 } },
+                { nome: 'MASCARA CAB.LOIROS E MECHADOS', tamanho: 300, formula: { 'AGUA DEIONIZADA': 200.00, 'EDTA DISSODICO': 0.00, 'BHT': 0.00, 'LANETTE 16': 12.00, 'LANETTE 18': 6.00, 'VASELINA LIQUIDA': 9.00, 'SUNQUART TMS': 9.00, 'GLICERINA BI-DESTILADA': 6.00, 'D&C VIOLET K7023': 1.00, 'PROCOLOR TG': 3.00, 'SILICONE DC 949': 9.00, 'SILICONE DC 1501': 12.00, 'KEM DIOL 10': 2.00, 'ESSENCIA MAXINN SALON': 2.00 } },
+                { nome: 'SHAMPOO HIDRA WASH HOME', tamanho: 300, formula: { 'AGUA DEIONIZADA': 148.00, 'EDTA DISSODICO': 0.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 21.00, 'AMIDA 80': 9.00, 'PLANTAREM 1200': 2.00, 'POLIQUARTENIUM 7': 2.00, 'GLICERINA BI-DESTILADA': 3.00, 'EXTRATO DE ALOE VERA': 6.00, 'EXTRATO DE ALGAS MARINHAS': 6.00, 'EXTRATO DE ALECRIM': 6.00, 'ALCOOL NEUTRO/CEREAIS': 2.00, 'ESSENCIA FEEL GOOD': 3.00, 'SILICONE DC 193': 1.00, 'ACIDO LATICO': 0.00, 'CLORETO DE SODIO': 2.00 } },
+                { nome: 'MASCARA HIDRA WASH HOME', tamanho: 300, formula: { 'AGUA DEIONIZADA': 155.00, 'EDTA DISSODICO': 0.00, 'SALCARE SC 60': 1.00, 'ALCOOL CETOESTEARILICO 30/70': 14.00, 'SUNQUART TMS': 6.00, 'VASELINA LIQUIDA': 6.00, 'MANTEIGA DE KARITE': 3.00, 'SUNQUART TMS': 9.00, 'D-PANTENOL': 2.00, 'SILICONE DC 2010': 9.00, 'SILICONE DC 245': 6.00, 'KEM DIOL 10': 2.00, 'EXTRATO DE ALOE VERA': 6.00, 'EXTRATO DE ALGAS MARINHAS': 6.00, 'EXTRATO DE ALECRIM': 6.00, 'PROPILENOGLICOL': 3.00, 'ALCOOL NEUTRO/CEREAIS': 1.00, 'ESSENCIA FEEL GOOD': 2.00, 'ACIDO CITRICO': 0.00 } },
+                { nome: 'REJUVENESCE MASTER - SHAMPOO', tamanho: 300, formula: { 'AGUA DEIONIZADA': 160.00, 'EDTA DISSODICO': 0.00, 'ARGININA HIDROLIZADA': 5.00, 'LAURIL ETER SULFATO': 84.00, 'COCO AMIDO PROPIL BETAINA': 21.00, 'AMIDA 80': 9.00, 'BASE PEROLADA': 8.00, 'POLIQUARTENIUM 7': 2.00, 'REPARAGE': 2.00, 'D-PANTENOL': 2.00, 'ESSENCIA DOVE II': 3.00, 'ACIDO CITRICO': 1.00, 'CLORETO DE SODIO': 2.00 } },
+                { nome: 'REJUVENESCE MASTER - MASCARA', tamanho: 300, formula: { 'AGUA DEIONIZADA': 193.00, 'EDTA DISSODICO': 0.00, 'BHT': 0.00, 'PROPILENOGLICOL': 6.00, 'LANETTE 16': 14.00, 'LANETTE 18': 6.00, 'VASELINA LIQUIDA': 9.00, 'SUNQUART TMS': 9.00, 'TREHALOSE 100': 9.00, 'SILICONE DC 1785': 12.00, 'SILICONE DC 1501': 5.00, 'AGREEN COTTON': 3.00, 'TAMARILIZ': 9.00, 'KEM DIOL 10': 2.00, 'ESSENCIA DOVE II': 3.00 } },
+                { nome: 'REJUVENESCE MASTER - LEAVE-IN', tamanho: 150, formula: { 'AGUA DEIONIZADA': 102.00, 'EDTA DISSODICO': 0.00, 'BHT': 0.00, 'LANETTE 16': 2.00, 'LANETTE 18': 1.00, 'VASELINA LIQUIDA': 2.00, 'SUNQUART TMS': 5.00, 'GLICERINA BI-DESTILADA': 3.00, 'TREHALOSE 100': 5.00, 'FIBER CARE X': 2.00, 'SILICONE DC 1785': 3.00, 'SILICONE DC 949': 3.00, 'TAMARILIZ': 3.00, 'DMDM HYDANTOIN': 1.00, 'ESSENCIA DOVE II': 2.00 } },
+                { nome: 'LEAVE-IN UNIVERSAL', tamanho: 90, formula: { 'AGUA DEIONIZADA': 74.00, 'EDTA DISSODICO': 0.00, 'LANETTE 16': 2.00, 'LANETTE 18': 1.00, 'SUNQUART TMS': 3.00, 'GLICERINA BI-DESTILADA': 3.00, 'TREHALOSE 100': 1.00, 'EXTRATO DE ALOE VERA': 1.00, 'BIO ELIXIR': 1.00, 'OLEO DE MUTAMBA': 2.00, 'SILICONE DC 949': 2.00 } },
+                { nome: 'SOS REVITALIZACAO', tamanho: 200, formula: { 'AGUA DEIONIZADA': 135.00, 'EDTA DISSODICO': 0.00, 'LANETTE 16': 6.00, 'LANETTE 18': 3.00, 'VASELINA LIQUIDA': 6.00, 'SUNQUART TMS': 4.00, 'POLIMERO W25': 6.00, 'SILICONE DC 1664': 8.00, 'QUERATRIX SB': 6.00, 'ESSENCIA PURIFICACAO': 1.00, 'LUNA MATRIX SYSTEM': 4.00, 'GLICERINA BI-DESTILADA': 5.00, 'TRIBOCARE RP': 4.00 } }
+            ]
+        };
+
+        let materialPrices = JSON.parse(JSON.stringify(materiaisPrimas));
+        let packaging = {};
+        let cotacoes = { USD: 5.16, EUR: 5.92 };
+        let percentuais = {};
+        let produtosCustomizados = [];
+        let mpTemporarias = [];
+
+        // AUTENTICAÇÃO
+        const SENHA_PADRAO = '180321';
+
+        function validarSenha(event) {
+            event.preventDefault();
+            const input = document.getElementById('passwordInput');
+            const senha = input.value.trim();
+
+            if (senha === SENHA_PADRAO) {
+                // Senha correta - salvar em sessionStorage
+                sessionStorage.setItem('autenticado', 'true');
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                init();
+            } else {
+                // Senha incorreta
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = '❌ Senha incorreta. Tente novamente.';
+                errorDiv.style.display = 'block';
+                input.value = '';
+                input.focus();
+                
+                // Limpar mensagem após 3 segundos
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function verificarAutenticacao() {
+            const autenticado = sessionStorage.getItem('autenticado');
+            if (autenticado === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                init();
+            } else {
+                // Focar no input de senha
+                setTimeout(() => {
+                    document.getElementById('passwordInput').focus();
+                }, 100);
+            }
+        }
+
+        // LOCALSTORAGE
+        function salvarProdutosCustomizados() {
+            localStorage.setItem('produtosCustomizados', JSON.stringify(produtosCustomizados));
+        }
+
+        function carregarProdutosCustomizados() {
+            const salvos = localStorage.getItem('produtosCustomizados');
+            if (salvos) {
+                produtosCustomizados = JSON.parse(salvos);
+            }
+        }
+
+        // MODAL
+        function abrirModalNovoProduto() {
+            const modal = document.getElementById('modalNovoProduto');
+            modal.style.display = 'flex';
+            mpTemporarias = [];
+            document.getElementById('inputNomeProduto').value = '';
+            document.getElementById('inputTamanhoProduto').value = '';
+            document.getElementById('selectMP').value = '';
+            document.getElementById('inputGramatura').value = '';
+            preencherSelectLinhas();
+            preencherSelectMPs();
+            atualizarListaMPsTemporarias();
+        }
+
+        function fecharModalNovoProduto() {
+            const modal = document.getElementById('modalNovoProduto');
+            modal.style.display = 'none';
+            mpTemporarias = [];
+        }
+
+        function preencherSelectLinhas() {
+            const select = document.getElementById('selectLinha');
+            select.innerHTML = '<option value="">-- Escolha uma linha --</option>';
+            Object.keys(linhas).forEach(linha => {
+                const option = document.createElement('option');
+                option.value = linha;
+                option.textContent = linha;
+                select.appendChild(option);
+            });
+        }
+
+        function preencherSelectMPs() {
+            const select = document.getElementById('selectMP');
+            select.innerHTML = '<option value="">-- Escolha uma MP --</option>';
+            Object.keys(materialPrices).forEach(mp => {
+                const option = document.createElement('option');
+                option.value = mp;
+                option.textContent = `${mp} (R$ ${materialPrices[mp].toFixed(2)}/1000g)`;
+                select.appendChild(option);
+            });
+        }
+
+        function adicionarMPTemporaria() {
+            const selectMP = document.getElementById('selectMP');
+            const inputGramatura = document.getElementById('inputGramatura');
+            
+            const mp = selectMP.value;
+            const grama = parseFloat(inputGramatura.value);
+
+            if (!mp) {
+                alert('Selecione uma matéria-prima!');
+                return;
+            }
+
+            if (!grama || grama <= 0) {
+                alert('Digite uma gramatura válida!');
+                return;
+            }
+
+            // Verificar se já existe
+            const existe = mpTemporarias.find(m => m.nome === mp);
+            if (existe) {
+                alert('Esta matéria-prima já foi adicionada! Use o valor diferente ou remova a anterior.');
+                return;
+            }
+
+            mpTemporarias.push({
+                nome: mp,
+                grama: grama
+            });
+
+            selectMP.value = '';
+            inputGramatura.value = '';
+            atualizarListaMPsTemporarias();
+        }
+
+        function removerMPTemporaria(index) {
+            mpTemporarias.splice(index, 1);
+            atualizarListaMPsTemporarias();
+        }
+
+        function atualizarListaMPsTemporarias() {
+            const lista = document.getElementById('listaMPsTemporarias');
+            const secao = document.getElementById('secaoMPsAdicionadas');
+            
+            if (mpTemporarias.length === 0) {
+                secao.style.display = 'none';
+                lista.innerHTML = '';
+                return;
+            }
+
+            secao.style.display = 'block';
+            lista.innerHTML = mpTemporarias.map((mp, idx) => `
+                <div class="mp-item">
+                    <div class="mp-item-info">
+                        <div class="mp-item-nome">${mp.nome}</div>
+                        <div class="mp-item-grama">${mp.grama}g</div>
+                    </div>
+                    <button class="mp-item-remove" onclick="removerMPTemporaria(${idx})">Remover</button>
+                </div>
+            `).join('');
+        }
+
+        function criarNovoProduto() {
+            const linha = document.getElementById('selectLinha').value;
+            const nome = document.getElementById('inputNomeProduto').value;
+            const tamanho = parseFloat(document.getElementById('inputTamanhoProduto').value);
+
+            if (!linha) {
+                alert('Selecione uma linha!');
+                return;
+            }
+
+            if (!nome.trim()) {
+                alert('Digite um nome para o produto!');
+                return;
+            }
+
+            if (!tamanho || tamanho <= 0) {
+                alert('Digite um tamanho válido!');
+                return;
+            }
+
+            if (mpTemporarias.length === 0) {
+                alert('Adicione pelo menos uma matéria-prima!');
+                return;
+            }
+
+            // Criar fórmula
+            const formula = {};
+            mpTemporarias.forEach(mp => {
+                formula[mp.nome] = mp.grama;
+            });
+
+            const novoProduto = {
+                linha: linha,
+                nome: nome,
+                tamanho: tamanho,
+                formula: formula,
+                customizado: true
+            };
+
+            produtosCustomizados.push(novoProduto);
+            salvarProdutosCustomizados();
+            
+            // Adicionar aos percentuais e embalagem
+            const key = `${linha}-${nome}`;
+            percentuais[key] = { administrativo: 30, impostos: 40, comissoes: 20, frete: 10, lucro: 100 };
+            packaging[key] = { tampa: 0, rotulo: 0, embalagem: 0 };
+
+            fecharModalNovoProduto();
+            renderProdutos();
+
+            const msg = document.getElementById('successMsg');
+            msg.innerHTML = '<div class="success-msg">✅ Produto criado com sucesso!</div>';
+            setTimeout(() => {
+                msg.innerHTML = '';
+            }, 3000);
+        }
+
+        function deletarProdutoCustomizado(linha, nome) {
+            if (!confirm(`Tem certeza que deseja deletar "${nome}"?`)) {
+                return;
+            }
+
+            const index = produtosCustomizados.findIndex(p => p.linha === linha && p.nome === nome);
+            if (index !== -1) {
+                produtosCustomizados.splice(index, 1);
+                salvarProdutosCustomizados();
+                
+                // Remover dos percentuais e embalagem
+                const key = `${linha}-${nome}`;
+                delete percentuais[key];
+                delete packaging[key];
+                
+                renderProdutos();
+            }
+        }
+
+        // INICIALIZAR
+        function init() {
+            carregarProdutosCustomizados();
+            initPackaging();
+            renderMateriais();
+            renderProdutos();
+            renderEmbalagem();
+            setupTabs();
+        }
+
+        function initPackaging() {
+            Object.keys(linhas).forEach(linha => {
+                linhas[linha].forEach(produto => {
+                    const key = `${linha}-${produto.nome}`;
+                    packaging[key] = { tampa: 0, rotulo: 0, embalagem: 0 };
+                    percentuais[key] = { administrativo: 30, impostos: 40, comissoes: 20, frete: 10, lucro: 100 };
+                });
+            });
+        }
+
+        function renderMateriais() {
+            const list = document.getElementById('materiaisList');
+            list.innerHTML = '';
+            
+            // Adicionar inputs para cotações
+            const cotacaoGroup = document.createElement('div');
+            cotacaoGroup.style.gridColumn = '1 / -1';
+            cotacaoGroup.style.padding = '1rem';
+            cotacaoGroup.style.background = '#fafaf8';
+            cotacaoGroup.style.borderRadius = '4px';
+            cotacaoGroup.style.marginBottom = '1rem';
+            cotacaoGroup.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 1rem; color: var(--dark);">Editar Cotações (Offline)</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>USD (R$)</label>
+                        <input type="number" step="0.01" value="${cotacoes.USD}" 
+                            onchange="cotacoes.USD = parseFloat(this.value) || 5.16; renderProdutos();">
+                    </div>
+                    <div class="form-group">
+                        <label>EUR (R$)</label>
+                        <input type="number" step="0.01" value="${cotacoes.EUR}" 
+                            onchange="cotacoes.EUR = parseFloat(this.value) || 5.92; renderProdutos();">
+                    </div>
+                </div>
+            `;
+            list.appendChild(cotacaoGroup);
+            
+            Object.keys(materialPrices).sort().forEach(mp => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                div.innerHTML = `
+                    <label>${mp}</label>
+                    <input type="number" step="0.01" value="${materialPrices[mp]}" 
+                        onchange="materialPrices['${mp}'] = parseFloat(this.value) || 0; renderProdutos();">
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function calcularCustoProduto(produto) {
+            let custo = 0;
+            Object.keys(produto.formula).forEach(ing => {
+                const qtd = produto.formula[ing];
+                const precoMPPor1000g = materialPrices[ing] || 0;
+                const custoPorGrama = precoMPPor1000g / 1000;
+                custo += custoPorGrama * qtd;
+            });
+            return custo;
+        }
+
+        function calcularPrecoFinal(custoBase, linha, nomeProduto) {
+            const key = `${linha}-${nomeProduto}`;
+            const perc = percentuais[key] || { administrativo: 30, impostos: 40, comissoes: 20, frete: 10, lucro: 100 };
+            
+            const administrativo = (custoBase * perc.administrativo) / 100;
+            const impostos = (custoBase * perc.impostos) / 100;
+            const comissoes = (custoBase * perc.comissoes) / 100;
+            const frete = (custoBase * perc.frete) / 100;
+            const lucro = (custoBase * perc.lucro) / 100;
+            
+            return {
+                administrativo,
+                impostos,
+                comissoes,
+                frete,
+                lucro,
+                total: custoBase + administrativo + impostos + comissoes + frete + lucro
+            };
+        }
+
+        function renderProdutos() {
+            const container = document.getElementById('linhasProdutos');
+            container.innerHTML = '';
+            
+            Object.keys(linhas).forEach(linha => {
+                const section = document.createElement('div');
+                section.className = 'section';
+                
+                let html = `<div class="line-title">${linha}</div><div class="grid">`;
+                
+                // PRODUTOS PADRÃO
+                linhas[linha].forEach(produto => {
+                    const custo = calcularCustoProduto(produto);
+                    const packKey = `${linha}-${produto.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const perc = percentuais[packKey] || { administrativo: 30, impostos: 40, comissoes: 20, frete: 10, lucro: 100 };
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, produto.nome);
+                    
+                    const formula = Object.keys(produto.formula).map(ing => 
+                        `<div class="formula-item"><span>${ing}</span><span>${produto.formula[ing]}g</span></div>`
+                    ).join('');
+                    
+                    html += `
+                        <div class="product-card">
+                            <div class="product-name">${produto.nome}</div>
+                            <div class="product-size">Tamanho: ${produto.tamanho}g</div>
+                            <div class="formula-list">${formula}</div>
+                            <div class="cost-display">
+                                <div class="cost-row">
+                                    <span>Matérias-Primas:</span>
+                                    <span>R$ ${custo.toFixed(2)}</span>
+                                </div>
+                                <div class="cost-row">
+                                    <span>Embalagem:</span>
+                                    <span>R$ ${packTotal.toFixed(2)}</span>
+                                </div>
+                                <div class="cost-row total">
+                                    <span>CUSTO BASE:</span>
+                                    <span>R$ ${custoBase.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div class="markup-section">
+                                <div class="markup-title">Editar Percentuais (%)</div>
+                                <div class="markup-grid">
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.administrativo}" 
+                                            onchange="percentuais['${packKey}'].administrativo = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Administrativo</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.impostos}" 
+                                            onchange="percentuais['${packKey}'].impostos = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Impostos</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.comissoes}" 
+                                            onchange="percentuais['${packKey}'].comissoes = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Comissões</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.frete}" 
+                                            onchange="percentuais['${packKey}'].frete = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Frete</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.lucro}" 
+                                            onchange="percentuais['${packKey}'].lucro = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Lucro</label>
+                                    </div>
+                                </div>
+
+                                <div class="markup-title">Breakdown do Preço Final</div>
+                                <div class="breakdown">
+                                    <div class="breakdown-item">
+                                        <span>Custo Base:</span>
+                                        <span>R$ ${custoBase.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Administrativo (${perc.administrativo}%):</span>
+                                        <span>R$ ${precoFinal.administrativo.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Impostos (${perc.impostos}%):</span>
+                                        <span>R$ ${precoFinal.impostos.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Comissões (${perc.comissoes}%):</span>
+                                        <span>R$ ${precoFinal.comissoes.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Frete (${perc.frete}%):</span>
+                                        <span>R$ ${precoFinal.frete.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Lucro (${perc.lucro}%):</span>
+                                        <span>R$ ${precoFinal.lucro.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item total">
+                                        <span>PREÇO FINAL DE VENDA:</span>
+                                        <span>R$ ${precoFinal.total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // PRODUTOS CUSTOMIZADOS
+                const customizados = produtosCustomizados.filter(p => p.linha === linha);
+                customizados.forEach(produto => {
+                    const custo = calcularCustoProduto(produto);
+                    const packKey = `${linha}-${produto.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const perc = percentuais[packKey] || { administrativo: 30, impostos: 40, comissoes: 20, frete: 10, lucro: 100 };
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, produto.nome);
+                    
+                    const formula = Object.keys(produto.formula).map(ing => 
+                        `<div class="formula-item"><span>${ing}</span><span>${produto.formula[ing]}g</span></div>`
+                    ).join('');
+                    
+                    html += `
+                        <div class="product-card" style="border: 2px solid var(--gold); position: relative;">
+                            <div style="position: absolute; top: 1rem; right: 1rem;">
+                                <button style="background: #ff6b6b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 3px; cursor: pointer; font-size: 0.8rem;" onclick="deletarProdutoCustomizado('${linha}', '${produto.nome.replace(/'/g, "\\'")}')">🗑️ Deletar</button>
+                            </div>
+                            <div class="product-name">${produto.nome} <span style="color: var(--gold); font-size: 0.75rem;">● CUSTOMIZADO</span></div>
+                            <div class="product-size">Tamanho: ${produto.tamanho}g</div>
+                            <div class="formula-list">${formula}</div>
+                            <div class="cost-display">
+                                <div class="cost-row">
+                                    <span>Matérias-Primas:</span>
+                                    <span>R$ ${custo.toFixed(2)}</span>
+                                </div>
+                                <div class="cost-row">
+                                    <span>Embalagem:</span>
+                                    <span>R$ ${packTotal.toFixed(2)}</span>
+                                </div>
+                                <div class="cost-row total">
+                                    <span>CUSTO BASE:</span>
+                                    <span>R$ ${custoBase.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div class="markup-section">
+                                <div class="markup-title">Editar Percentuais (%)</div>
+                                <div class="markup-grid">
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.administrativo}" 
+                                            onchange="percentuais['${packKey}'].administrativo = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Administrativo</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.impostos}" 
+                                            onchange="percentuais['${packKey}'].impostos = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Impostos</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.comissoes}" 
+                                            onchange="percentuais['${packKey}'].comissoes = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Comissões</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.frete}" 
+                                            onchange="percentuais['${packKey}'].frete = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Frete</label>
+                                    </div>
+                                    <div class="markup-input">
+                                        <input type="number" step="1" value="${perc.lucro}" 
+                                            onchange="percentuais['${packKey}'].lucro = parseFloat(this.value) || 0; renderProdutos();">
+                                        <label>Lucro</label>
+                                    </div>
+                                </div>
+
+                                <div class="markup-title">Breakdown do Preço Final</div>
+                                <div class="breakdown">
+                                    <div class="breakdown-item">
+                                        <span>Custo Base:</span>
+                                        <span>R$ ${custoBase.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Administrativo (${perc.administrativo}%):</span>
+                                        <span>R$ ${precoFinal.administrativo.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Impostos (${perc.impostos}%):</span>
+                                        <span>R$ ${precoFinal.impostos.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Comissões (${perc.comissoes}%):</span>
+                                        <span>R$ ${precoFinal.comissoes.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Frete (${perc.frete}%):</span>
+                                        <span>R$ ${precoFinal.frete.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span>+ Lucro (${perc.lucro}%):</span>
+                                        <span>R$ ${precoFinal.lucro.toFixed(2)}</span>
+                                    </div>
+                                    <div class="breakdown-item total">
+                                        <span>PREÇO FINAL DE VENDA:</span>
+                                        <span>R$ ${precoFinal.total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                section.innerHTML = html;
+                container.appendChild(section);
+            });
+        }
+
+        function renderEmbalagem() {
+            const container = document.getElementById('linhasEmbalagem');
+            container.innerHTML = '';
+            
+            Object.keys(linhas).forEach(linha => {
+                const section = document.createElement('div');
+                section.className = 'section';
+                
+                let html = `<div class="line-title">${linha}</div>`;
+                
+                linhas[linha].forEach(produto => {
+                    const packKey = `${linha}-${produto.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    
+                    html += `
+                        <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #e0dcd7;">
+                            <div style="font-weight: 600; margin-bottom: 1rem; color: var(--dark);">${produto.nome}</div>
+                            <div class="inline-group">
+                                <div class="form-group">
+                                    <label>Tampa (R$)</label>
+                                    <input type="number" step="0.01" value="${pack.tampa}" 
+                                        onchange="packaging['${packKey}'].tampa = parseFloat(this.value) || 0; renderProdutos();">
+                                </div>
+                                <div class="form-group">
+                                    <label>Rótulo (R$)</label>
+                                    <input type="number" step="0.01" value="${pack.rotulo}" 
+                                        onchange="packaging['${packKey}'].rotulo = parseFloat(this.value) || 0; renderProdutos();">
+                                </div>
+                                <div class="form-group">
+                                    <label>Embalagem (R$)</label>
+                                    <input type="number" step="0.01" value="${pack.embalagem}" 
+                                        onchange="packaging['${packKey}'].embalagem = parseFloat(this.value) || 0; renderProdutos();">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                section.innerHTML = html;
+                container.appendChild(section);
+            });
+        }
+
+        function setupTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(tabName).classList.add('active');
+                });
+            });
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Estilo
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const gold = [212, 165, 116];
+            
+            // Título
+            doc.setFontSize(20);
+            doc.setTextColor(26, 26, 26);
+            doc.text('Calculadora de Custos', pageWidth / 2, 20, { align: 'center' });
+            
+            // Data
+            doc.setFontSize(10);
+            doc.setTextColor(153, 153, 153);
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+            doc.text(`Gerado em: ${dataAtual}`, pageWidth / 2, 28, { align: 'center' });
+            
+            let yPos = 35;
+            
+            // Tabelas por linha
+            Object.keys(linhas).forEach(linha => {
+                // Verificar espaço para nova página
+                if (yPos > pageHeight - 40) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                // Título da linha
+                doc.setFontSize(12);
+                doc.setTextColor(212, 165, 116);
+                doc.text(linha, 15, yPos);
+                yPos += 8;
+                
+                // Dados para a tabela
+                const tableData = [];
+                
+                // Produtos padrão
+                linhas[linha].forEach(p => {
+                    const custo = calcularCustoProduto(p);
+                    const packKey = `${linha}-${p.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, p.nome);
+                    
+                    tableData.push([
+                        p.nome,
+                        `${p.tamanho}g`,
+                        `R$ ${custoBase.toFixed(2)}`,
+                        `R$ ${precoFinal.total.toFixed(2)}`
+                    ]);
+                });
+                
+                // Produtos customizados
+                produtosCustomizados.filter(p => p.linha === linha).forEach(p => {
+                    const custo = calcularCustoProduto(p);
+                    const packKey = `${linha}-${p.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, p.nome);
+                    
+                    tableData.push([
+                        `${p.nome} *`,
+                        `${p.tamanho}g`,
+                        `R$ ${custoBase.toFixed(2)}`,
+                        `R$ ${precoFinal.total.toFixed(2)}`
+                    ]);
+                });
+                
+                // Criar tabela se houver dados
+                if (tableData.length > 0) {
+                    doc.autoTable({
+                        head: [['Produto', 'Tamanho', 'Custo Base', 'Preço Final']],
+                        body: tableData,
+                        startY: yPos,
+                        margin: { left: 15, right: 15 },
+                        headStyles: {
+                            fillColor: gold,
+                            textColor: 255,
+                            fontStyle: 'bold',
+                            fontSize: 9,
+                            halign: 'center'
+                        },
+                        bodyStyles: {
+                            fontSize: 8,
+                            textColor: 26,
+                            halign: 'left'
+                        },
+                        alternateRowStyles: {
+                            fillColor: [249, 247, 244]
+                        },
+                        columnStyles: {
+                            1: { halign: 'center' },
+                            2: { halign: 'right' },
+                            3: { halign: 'right', textColor: gold }
+                        },
+                        didDrawPage: (data) => {
+                            yPos = data.lastAutoTable.finalY + 10;
+                        }
+                    });
+                    
+                    yPos = doc.lastAutoTable.finalY + 10;
+                }
+            });
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(153, 153, 153);
+            doc.text('* Produtos customizados', 15, pageHeight - 10);
+            
+            // Download
+            doc.save('custos-cosmeticos.pdf');
+            
+            const msg = document.getElementById('successMsg');
+            msg.innerHTML = '<div class="success-msg">✅ PDF exportado com sucesso!</div>';
+            setTimeout(() => {
+                msg.innerHTML = '';
+            }, 3000);
+        }
+
+        function exportarDados() {
+            const dados = {};
+            Object.keys(linhas).forEach(linha => {
+                dados[linha] = [];
+                
+                // PADRÃO
+                linhas[linha].forEach(p => {
+                    const custo = calcularCustoProduto(p);
+                    const packKey = `${linha}-${p.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, p.nome);
+                    
+                    dados[linha].push({
+                        nome: p.nome,
+                        tamanho: p.tamanho,
+                        custoMateriaisPrimas: parseFloat(custo.toFixed(2)),
+                        custoEmbalagem: parseFloat(packTotal.toFixed(2)),
+                        custoBase: parseFloat(custoBase.toFixed(2)),
+                        embalagem: pack,
+                        percentuais: percentuais[packKey],
+                        breakdown: {
+                            administrativo: parseFloat(precoFinal.administrativo.toFixed(2)),
+                            impostos: parseFloat(precoFinal.impostos.toFixed(2)),
+                            comissoes: parseFloat(precoFinal.comissoes.toFixed(2)),
+                            frete: parseFloat(precoFinal.frete.toFixed(2)),
+                            lucro: parseFloat(precoFinal.lucro.toFixed(2))
+                        },
+                        precoFinalVenda: parseFloat(precoFinal.total.toFixed(2)),
+                        customizado: false
+                    });
+                });
+
+                // CUSTOMIZADOS
+                produtosCustomizados.filter(p => p.linha === linha).forEach(p => {
+                    const custo = calcularCustoProduto(p);
+                    const packKey = `${linha}-${p.nome}`;
+                    const pack = packaging[packKey] || { tampa: 0, rotulo: 0, embalagem: 0 };
+                    const packTotal = pack.tampa + pack.rotulo + pack.embalagem;
+                    const custoBase = custo + packTotal;
+                    const precoFinal = calcularPrecoFinal(custoBase, linha, p.nome);
+                    
+                    dados[linha].push({
+                        nome: p.nome,
+                        tamanho: p.tamanho,
+                        custoMateriaisPrimas: parseFloat(custo.toFixed(2)),
+                        custoEmbalagem: parseFloat(packTotal.toFixed(2)),
+                        custoBase: parseFloat(custoBase.toFixed(2)),
+                        embalagem: pack,
+                        percentuais: percentuais[packKey],
+                        breakdown: {
+                            administrativo: parseFloat(precoFinal.administrativo.toFixed(2)),
+                            impostos: parseFloat(precoFinal.impostos.toFixed(2)),
+                            comissoes: parseFloat(precoFinal.comissoes.toFixed(2)),
+                            frete: parseFloat(precoFinal.frete.toFixed(2)),
+                            lucro: parseFloat(precoFinal.lucro.toFixed(2))
+                        },
+                        precoFinalVenda: parseFloat(precoFinal.total.toFixed(2)),
+                        customizado: true
+                    });
+                });
+            });
+            
+            const dataStr = JSON.stringify(dados, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'custos-cosmeticos.json';
+            link.click();
+            
+            const msg = document.getElementById('successMsg');
+            msg.innerHTML = '<div class="success-msg">✅ Dados exportados com sucesso!</div>';
+            setTimeout(() => {
+                msg.innerHTML = '';
+            }, 3000);
+        }
+
+        // START
+        verificarAutenticacao();
+    </script>
+</body>
+</html>
