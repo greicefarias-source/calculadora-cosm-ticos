@@ -983,10 +983,19 @@
 
         let materialPrices = JSON.parse(JSON.stringify(materiaisPrimas));
         let packaging = {};
-        let cotacoes = { USD: 5.16, EUR: 5.92 };
+        let cotacoes = { USD: 5.16, EUR: 5.92, BRL: 1.00 };
         let percentuais = {};
         let produtosCustomizados = [];
         let mpTemporarias = [];
+        let materialValues = {}; // { "ACIDO CITRICO": 10 }
+        let materialCurrencies = {}; // { "ACIDO CITRICO": "USD" }
+
+        // Inicializar com valores do materiaisPrimas (R$/1000g)
+        Object.keys(materiaisPrimas).forEach(mp => {
+            materialValues[mp] = materiaisPrimas[mp];
+            materialCurrencies[mp] = 'BRL'; // Padrão é BRL, então valor = valor original
+            materialPrices[mp] = materiaisPrimas[mp]; // Mantém o valor original
+        });
 
         // AUTENTICAÇÃO
         const SENHA_PADRAO = '180321';
@@ -1225,6 +1234,7 @@
         // INICIALIZAR
         function init() {
             carregarProdutosCustomizados();
+            carregarMateriaisPrimas(); // CARREGA OS ÚLTIMOS VALORES SALVOS
             initPackaging();
             renderMateriais();
             renderProdutos();
@@ -1242,10 +1252,49 @@
             });
         }
 
+        // LOCALSTORAGE PARA MATÉRIAS-PRIMAS
+        function salvarMateriaisPrimas() {
+            localStorage.setItem('materialValues', JSON.stringify(materialValues));
+            localStorage.setItem('materialCurrencies', JSON.stringify(materialCurrencies));
+        }
+
+        function carregarMateriaisPrimas() {
+            const savedValues = localStorage.getItem('materialValues');
+            const savedCurrencies = localStorage.getItem('materialCurrencies');
+
+            if (savedValues) {
+                materialValues = JSON.parse(savedValues);
+            }
+            if (savedCurrencies) {
+                materialCurrencies = JSON.parse(savedCurrencies);
+            }
+
+            // Recalcular preços com os valores carregados
+            Object.keys(materialValues).forEach(mp => {
+                materialPrices[mp] = calcularPrecoMP(mp);
+            });
+        }
+
+        function calcularPrecoMP(mp) {
+            const valor = materialValues[mp] || 0;
+            const moeda = materialCurrencies[mp] || 'BRL';
+            const cotacao = cotacoes[moeda] || 1;
+            return valor * cotacao;
+        }
+
+        function atualizarPrecoMP(mp, valor, moeda) {
+            materialValues[mp] = valor;
+            materialCurrencies[mp] = moeda;
+            materialPrices[mp] = calcularPrecoMP(mp);
+            salvarMateriaisPrimas(); // SALVA NO LOCALSTORAGE
+            renderMateriais();
+            renderProdutos();
+        }
+
         function renderMateriais() {
             const list = document.getElementById('materiaisList');
             list.innerHTML = '';
-            
+
             // Adicionar inputs para cotações
             const cotacaoGroup = document.createElement('div');
             cotacaoGroup.style.gridColumn = '1 / -1';
@@ -1255,28 +1304,60 @@
             cotacaoGroup.style.marginBottom = '1rem';
             cotacaoGroup.innerHTML = `
                 <div style="font-weight: 600; margin-bottom: 1rem; color: var(--dark);">Editar Cotações (Offline)</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label>USD (R$)</label>
-                        <input type="number" step="0.01" value="${cotacoes.USD}" 
-                            onchange="cotacoes.USD = parseFloat(this.value) || 5.16; renderProdutos();">
+                        <input type="number" step="0.01" value="${cotacoes.USD}"
+                            onchange="cotacoes.USD = parseFloat(this.value) || 5.16; renderMateriais(); renderProdutos();">
                     </div>
                     <div class="form-group">
                         <label>EUR (R$)</label>
-                        <input type="number" step="0.01" value="${cotacoes.EUR}" 
-                            onchange="cotacoes.EUR = parseFloat(this.value) || 5.92; renderProdutos();">
+                        <input type="number" step="0.01" value="${cotacoes.EUR}"
+                            onchange="cotacoes.EUR = parseFloat(this.value) || 5.92; renderMateriais(); renderProdutos();">
+                    </div>
+                    <div class="form-group">
+                        <label>BRL (R$)</label>
+                        <input type="number" step="0.01" value="${cotacoes.BRL}"
+                            onchange="cotacoes.BRL = parseFloat(this.value) || 1.00; renderMateriais(); renderProdutos();">
                     </div>
                 </div>
             `;
             list.appendChild(cotacaoGroup);
-            
+
             Object.keys(materialPrices).sort().forEach(mp => {
+                const valor = materialValues[mp] || 0;
+                const moeda = materialCurrencies[mp] || 'BRL';
+                const precoFinal = calcularPrecoMP(mp);
+
                 const div = document.createElement('div');
-                div.className = 'form-group';
+                div.style.background = 'var(--white)';
+                div.style.padding = '1rem';
+                div.style.borderRadius = '4px';
+                div.style.border = '1px solid var(--border)';
+                div.style.marginBottom = '0.75rem';
                 div.innerHTML = `
-                    <label>${mp}</label>
-                    <input type="number" step="0.01" value="${materialPrices[mp]}" 
-                        onchange="materialPrices['${mp}'] = parseFloat(this.value) || 0; renderProdutos();">
+                    <div style="font-weight: 600; margin-bottom: 0.75rem; color: var(--dark); font-size: 0.9rem;">${mp}</div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 0.75rem; margin-bottom: 0.75rem; align-items: end;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem;">Valor</label>
+                            <input type="number" step="0.01" value="${valor}"
+                                onchange="atualizarPrecoMP('${mp}', parseFloat(this.value) || 0, materialCurrencies['${mp}']);"
+                                style="padding: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem;">Moeda</label>
+                            <select onchange="atualizarPrecoMP('${mp}', materialValues['${mp}'], this.value)"
+                                style="padding: 0.5rem;">
+                                <option value="BRL" ${moeda === 'BRL' ? 'selected' : ''}>REAL</option>
+                                <option value="USD" ${moeda === 'USD' ? 'selected' : ''}>DÓLAR</option>
+                                <option value="EUR" ${moeda === 'EUR' ? 'selected' : ''}>EURO</option>
+                            </select>
+                        </div>
+                        <div style="background: #f9f7f4; padding: 0.5rem; border-radius: 3px; border: 1px solid var(--border);">
+                            <div style="font-size: 0.75rem; color: #999; margin-bottom: 0.25rem;">Resultado</div>
+                            <div style="font-weight: 600; color: var(--gold); font-size: 1rem;">R$ ${precoFinal.toFixed(2)}</div>
+                        </div>
+                    </div>
                 `;
                 list.appendChild(div);
             });
